@@ -512,8 +512,6 @@ gpio!(GPIOB, gpiob, gpiof, iopben, iopbrst, PBx, [
     PB2: (pb2, 2, Input<Floating>, AFRL),
     PB3: (pb3, 3, Input<Floating>, AFRL),
     PB4: (pb4, 4, Input<Floating>, AFRL),
-    PB3: (pb3, 3, Input<Floating>, AFRL),
-    PB4: (pb4, 4, Input<Floating>, AFRL),
     PB5: (pb5, 5, Input<Floating>, AFRL),
     PB6: (pb6, 6, Input<Floating>, AFRL),
     PB7: (pb7, 7, Input<Floating>, AFRL),
