@@ -11,7 +11,7 @@ version = "0.1.0"
 cortex-m = "0.4.0"
 embedded-hal = "0.1.0"
 nb = "0.1.0"
-stm32f0xx = { path = "../stm32f0xx" }
+stm32f0xx = { git = "https://github.com/dtwood/stm32f0xx" }
 
 [dependencies.cast]
 default-features = false
