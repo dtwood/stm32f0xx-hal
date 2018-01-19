@@ -95,7 +95,7 @@ macro_rules! gpio {
             use core::marker::PhantomData;
 
             use hal::digital::OutputPin;
-            use stm32f30x::{$gpioy, $GPIOX};
+            use stm32f0xx::{$gpioy, $GPIOX};
 
             use rcc::AHB;
             use super::{
@@ -125,7 +125,7 @@ macro_rules! gpio {
                 type Parts = Parts;
 
                 fn split(self, ahb: &mut AHB) -> Parts {
-                    ahb.enr().modify(|_, w| w.$iopxenr().enabled());
+                    ahb.enr().modify(|_, w| w.$iopxenr().set_bit());
                     ahb.rstr().modify(|_, w| w.$iopxrst().set_bit());
                     ahb.rstr().modify(|_, w| w.$iopxrst().clear_bit());
 
@@ -507,13 +507,15 @@ gpio!(GPIOA, gpioa, gpioa, iopaen, ioparst, PAx, [
     // PA15: (15, Input<Floating>),
 ]);
 
-gpio!(GPIOB, gpiob, gpiob, iopben, iopbrst, PBx, [
+gpio!(GPIOB, gpiob, gpiof, iopben, iopbrst, PBx, [
     PB0: (pb0, 0, Input<Floating>, AFRL),
     PB1: (pb1, 1, Input<Floating>, AFRL),
     PB2: (pb2, 2, Input<Floating>, AFRL),
     // TODO these are configured as JTAG pins
     // PB3: (3, Input<Floating>),
     // PB4: (4, Input<Floating>),
+    PB3: (pb3, 3, Input<Floating>, AFRL),
+    PB4: (pb4, 4, Input<Floating>, AFRL),
     PB5: (pb5, 5, Input<Floating>, AFRL),
     PB6: (pb6, 6, Input<Floating>, AFRL),
     PB7: (pb7, 7, Input<Floating>, AFRL),
@@ -527,7 +529,7 @@ gpio!(GPIOB, gpiob, gpiob, iopben, iopbrst, PBx, [
     PB15: (pb15, 15, Input<Floating>, AFRH),
 ]);
 
-gpio!(GPIOC, gpioc, gpioc, iopcen, iopcrst, PCx, [
+gpio!(GPIOC, gpioc, gpiof, iopcen, iopcrst, PCx, [
     PC0: (pc0, 0, Input<Floating>, AFRL),
     PC1: (pc1, 1, Input<Floating>, AFRL),
     PC2: (pc2, 2, Input<Floating>, AFRL),
@@ -546,7 +548,7 @@ gpio!(GPIOC, gpioc, gpioc, iopcen, iopcrst, PCx, [
     PC15: (pc15, 15, Input<Floating>, AFRH),
 ]);
 
-gpio!(GPIOD, gpiod, gpioc, iopden, iopdrst, PDx, [
+gpio!(GPIOD, gpiod, gpiof, iopden, iopdrst, PDx, [
     PD0: (pd0, 0, Input<Floating>, AFRL),
     PD1: (pd1, 1, Input<Floating>, AFRL),
     PD2: (pd2, 2, Input<Floating>, AFRL),
@@ -565,26 +567,7 @@ gpio!(GPIOD, gpiod, gpioc, iopden, iopdrst, PDx, [
     PD15: (pd15, 15, Input<Floating>, AFRH),
 ]);
 
-gpio!(GPIOE, gpioe, gpioc, iopeen, ioperst, PEx, [
-    PE0: (pe0, 0, Input<Floating>, AFRL),
-    PE1: (pe1, 1, Input<Floating>, AFRL),
-    PE2: (pe2, 2, Input<Floating>, AFRL),
-    PE3: (pe3, 3, Input<Floating>, AFRL),
-    PE4: (pe4, 4, Input<Floating>, AFRL),
-    PE5: (pe5, 5, Input<Floating>, AFRL),
-    PE6: (pe6, 6, Input<Floating>, AFRL),
-    PE7: (pe7, 7, Input<Floating>, AFRL),
-    PE8: (pe8, 8, Input<Floating>, AFRH),
-    PE9: (pe9, 9, Input<Floating>, AFRH),
-    PE10: (pe10, 10, Input<Floating>, AFRH),
-    PE11: (pe11, 11, Input<Floating>, AFRH),
-    PE12: (pe12, 12, Input<Floating>, AFRH),
-    PE13: (pe13, 13, Input<Floating>, AFRH),
-    PE14: (pe14, 14, Input<Floating>, AFRH),
-    PE15: (pe15, 15, Input<Floating>, AFRH),
-]);
-
-gpio!(GPIOF, gpiof, gpioc, iopfen, iopfrst, PFx, [
+gpio!(GPIOF, gpiof, gpiof, iopfen, iopfrst, PFx, [
     PF0: (pf0, 0, Input<Floating>, AFRL),
     PF1: (pf1, 1, Input<Floating>, AFRL),
     PF2: (pf2, 2, Input<Floating>, AFRL),

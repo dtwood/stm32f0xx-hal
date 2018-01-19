@@ -5,13 +5,12 @@ use core::marker::PhantomData;
 
 use hal::serial;
 use nb;
-use stm32f30x::{USART1, USART2, USART3};
+use stm32f0xx::{USART1, USART2, USART3};
 
 use gpio::gpioa::{PA10, PA2, PA3, PA9};
 use gpio::gpiob::{PB10, PB11, PB6, PB7};
 use gpio::gpioc::{PC10, PC11, PC4, PC5};
 use gpio::gpiod::{PD5, PD6, PD8, PD9};
-use gpio::gpioe::{PE0, PE1, PE15};
 use gpio::AF7;
 use rcc::{APB1, APB2, Clocks};
 use time::Bps;
@@ -48,12 +47,10 @@ pub unsafe trait RxPin<USART> {}
 unsafe impl TxPin<USART1> for PA9<AF7> {}
 unsafe impl TxPin<USART1> for PB6<AF7> {}
 unsafe impl TxPin<USART1> for PC4<AF7> {}
-unsafe impl TxPin<USART1> for PE0<AF7> {}
 
 unsafe impl RxPin<USART1> for PA10<AF7> {}
 unsafe impl RxPin<USART1> for PB7<AF7> {}
 unsafe impl RxPin<USART1> for PC5<AF7> {}
-unsafe impl RxPin<USART1> for PE1<AF7> {}
 
 unsafe impl TxPin<USART2> for PA2<AF7> {}
 // unsafe impl TxPin<USART2> for PA14<AF7> {}
@@ -72,7 +69,6 @@ unsafe impl TxPin<USART3> for PD8<AF7> {}
 unsafe impl RxPin<USART3> for PB11<AF7> {}
 unsafe impl RxPin<USART3> for PC11<AF7> {}
 unsafe impl RxPin<USART3> for PD9<AF7> {}
-unsafe impl RxPin<USART3> for PE15<AF7> {}
 
 /// Serial abstraction
 pub struct Serial<USART, PINS> {
@@ -109,7 +105,7 @@ macro_rules! hal {
                     RX: RxPin<$USARTX>,
                 {
                     // enable or reset $USARTX
-                    apb.enr().modify(|_, w| w.$usartXen().enabled());
+                    apb.enr().modify(|_, w| w.$usartXen().set_bit());
                     apb.rstr().modify(|_, w| w.$usartXrst().set_bit());
                     apb.rstr().modify(|_, w| w.$usartXrst().clear_bit());
 
@@ -237,7 +233,7 @@ macro_rules! hal {
 }
 
 hal! {
-    USART1: (usart1, APB2, usart1en, usart1rst, pclk2),
-    USART2: (usart2, APB1, usart2en, usart2rst, pclk1),
-    USART3: (usart3, APB1, usart3en, usart3rst, pclk1),
+    USART1: (usart1, APB2, usart1en, usart1rst, pclk),
+    USART2: (usart2, APB1, usart2en, usart2rst, pclk),
+    USART3: (usart3, APB1, usart3en, usart3rst, pclk),
 }

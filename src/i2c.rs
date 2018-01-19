@@ -1,7 +1,7 @@
 //! Inter-Integrated Circuit (I2C) bus
 
 use cast::u8;
-use stm32f30x::{I2C1, I2C2};
+use stm32f0xx::{I2C1, I2C2};
 
 use gpio::gpioa::{PA10, PA9};
 use gpio::gpiob::{PB6, PB7, PB8, PB9};
@@ -87,7 +87,7 @@ macro_rules! hal {
                     SCL: SclPin<$I2CX>,
                     SDA: SdaPin<$I2CX>,
                 {
-                    apb1.enr().modify(|_, w| w.$i2cXen().enabled());
+                    apb1.enr().modify(|_, w| w.$i2cXen().set_bit());
                     apb1.rstr().modify(|_, w| w.$i2cXrst().set_bit());
                     apb1.rstr().modify(|_, w| w.$i2cXrst().clear_bit());
 
@@ -103,7 +103,7 @@ macro_rules! hal {
                     //
                     // t_SYNC1 + t_SYNC2 > 4 * t_I2CCLK
                     // t_SCL ~= t_SYNC1 + t_SYNC2 + t_SCLL + t_SCLH
-                    let i2cclk = clocks.pclk1().0;
+                    let i2cclk = clocks.pclk().0;
                     let ratio = i2cclk / freq - 4;
                     let (presc, scll, sclh, sdadel, scldel) = if freq >= 100_000 {
                         // fast-mode or fast-mode plus
@@ -186,16 +186,18 @@ macro_rules! hal {
 
                     // START and prepare to send `bytes`
                     self.i2c.cr2.write(|w| {
-                        w.sadd1()
-                            .bits(addr)
-                            .rd_wrn()
-                            .clear_bit()
-                            .nbytes()
-                            .bits(bytes.len() as u8)
-                            .start()
-                            .set_bit()
-                            .autoend()
-                            .set_bit()
+                        unsafe {
+                            w.sadd1()
+                                .bits(addr)
+                                .rd_wrn()
+                                .clear_bit()
+                                .nbytes()
+                                .bits(bytes.len() as u8)
+                                .start()
+                                .set_bit()
+                                .autoend()
+                                .set_bit()
+                        }
                     });
 
                     for byte in bytes {
@@ -204,7 +206,7 @@ macro_rules! hal {
                         busy_wait!(self.i2c, txis);
 
                         // put byte on the wire
-                        self.i2c.txdr.write(|w| w.txdata().bits(*byte));
+                        self.i2c.txdr.write(|w| unsafe { w.txdata().bits(*byte) } );
                     }
 
                     // Wait until the last transmission is finished ???
@@ -234,16 +236,18 @@ macro_rules! hal {
 
                     // START and prepare to send `bytes`
                     self.i2c.cr2.write(|w| {
-                        w.sadd1()
-                            .bits(addr)
-                            .rd_wrn()
-                            .clear_bit()
-                            .nbytes()
-                            .bits(bytes.len() as u8)
-                            .start()
-                            .set_bit()
-                            .autoend()
-                            .clear_bit()
+                        unsafe {
+                            w.sadd1()
+                                .bits(addr)
+                                .rd_wrn()
+                                .clear_bit()
+                                .nbytes()
+                                .bits(bytes.len() as u8)
+                                .start()
+                                .set_bit()
+                                .autoend()
+                                .clear_bit()
+                        }
                     });
 
                     for byte in bytes {
@@ -252,7 +256,7 @@ macro_rules! hal {
                         busy_wait!(self.i2c, txis);
 
                         // put byte on the wire
-                        self.i2c.txdr.write(|w| w.txdata().bits(*byte));
+                        self.i2c.txdr.write(|w| unsafe { w.txdata().bits(*byte) } );
                     }
 
                     // Wait until the last transmission is finished
@@ -260,16 +264,18 @@ macro_rules! hal {
 
                     // reSTART and prepare to receive bytes into `buffer`
                     self.i2c.cr2.write(|w| {
-                        w.sadd1()
-                            .bits(addr)
-                            .rd_wrn()
-                            .set_bit()
-                            .nbytes()
-                            .bits(buffer.len() as u8)
-                            .start()
-                            .set_bit()
-                            .autoend()
-                            .set_bit()
+                        unsafe {
+                            w.sadd1()
+                                .bits(addr)
+                                .rd_wrn()
+                                .set_bit()
+                                .nbytes()
+                                .bits(buffer.len() as u8)
+                                .start()
+                                .set_bit()
+                                .autoend()
+                                .set_bit()
+                        }
                     });
 
                     for byte in buffer {

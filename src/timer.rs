@@ -3,7 +3,7 @@
 use cast::{u16, u32};
 use hal::timer::{CountDown, Periodic};
 use nb;
-use stm32f30x::{TIM2, TIM3, TIM4, TIM6, TIM7};
+use stm32f0xx::{TIM2, TIM3, TIM6, TIM7};
 
 use rcc::{APB1, Clocks};
 use time::Hertz;
@@ -44,7 +44,7 @@ macro_rules! hal {
                     self.timeout = timeout.into();
 
                     let frequency = self.timeout.0;
-                    let ticks = self.clocks.pclk1().0 * if self.clocks.ppre1() == 1 { 1 } else { 2 }
+                    let ticks = self.clocks.pclk().0 * if self.clocks.ppre() == 1 { 1 } else { 2 }
                         / frequency;
 
                     let psc = u16((ticks - 1) / (1 << 16)).unwrap();
@@ -125,7 +125,6 @@ macro_rules! hal {
 hal! {
     TIM2: (tim2, tim2en, tim2rst),
     TIM3: (tim3, tim3en, tim3rst),
-    TIM4: (tim4, tim4en, tim4rst),
     TIM6: (tim6, tim6en, tim6rst),
     TIM7: (tim7, tim7en, tim7rst),
 }

@@ -4,12 +4,11 @@ use core::ptr;
 
 use hal::spi::{FullDuplex, Mode, Phase, Polarity};
 use nb;
-use stm32f30x::{SPI1, SPI2, SPI3};
+use stm32f0xx::{SPI1, SPI2};
 
 use gpio::gpioa::{PA5, PA6, PA7};
 use gpio::gpiob::{PB13, PB14, PB15, PB5};
-use gpio::gpioc::{PC10, PC11, PC12};
-use gpio::{AF5, AF6};
+use gpio::AF5;
 use rcc::{APB1, APB2, Clocks};
 use time::Hertz;
 
@@ -40,24 +39,15 @@ unsafe impl SckPin<SPI1> for PA5<AF5> {}
 
 unsafe impl SckPin<SPI2> for PB13<AF5> {}
 
-// unsafe impl SckPin<SPI3> for PB3<AF6> {}
-unsafe impl SckPin<SPI3> for PC10<AF6> {}
-
 unsafe impl MisoPin<SPI1> for PA6<AF5> {}
 // unsafe impl MisoPin<SPI1> for PB4<AF5> {}
 
 unsafe impl MisoPin<SPI2> for PB14<AF5> {}
 
-// unsafe impl MisoPin<SPI3> for PB4<AF6> {}
-unsafe impl MisoPin<SPI3> for PC11<AF6> {}
-
 unsafe impl MosiPin<SPI1> for PA7<AF5> {}
 unsafe impl MosiPin<SPI1> for PB5<AF5> {}
 
 unsafe impl MosiPin<SPI2> for PB15<AF5> {}
-
-unsafe impl MosiPin<SPI3> for PB5<AF6> {}
-unsafe impl MosiPin<SPI3> for PC12<AF6> {}
 
 /// SPI peripheral operating in full duplex master mode
 pub struct Spi<SPI, PINS> {
@@ -85,7 +75,7 @@ macro_rules! hal {
                     MOSI: MosiPin<$SPIX>,
                 {
                     // enable or reset $SPIX
-                    apb2.enr().modify(|_, w| w.$spiXen().enabled());
+                    apb2.enr().modify(|_, w| w.$spiXen().set_bit());
                     apb2.rstr().modify(|_, w| w.$spiXrst().set_bit());
                     apb2.rstr().modify(|_, w| w.$spiXrst().clear_bit());
 
@@ -202,9 +192,8 @@ macro_rules! hal {
 }
 
 hal! {
-    SPI1: (spi1, APB2, spi1en, spi1rst, pclk2),
-    SPI2: (spi2, APB1, spi2en, spi2rst, pclk1),
-    SPI3: (spi3, APB1, spi3en, spi3rst, pclk1),
+    SPI1: (spi1, APB2, spi1en, spi1rst, pclk),
+    SPI2: (spi2, APB1, spi2en, spi2rst, pclk),
 }
 
 // FIXME not working
