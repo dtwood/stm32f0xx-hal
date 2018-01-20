@@ -1,9 +1,9 @@
 #![allow(missing_docs)]
 
 use analog_hal;
-use stm32f0xx;
+use stm32f0xx::{ADC, DAC};
 use gpio::Analog;
-use gpio::gpioa::{PA0, PA5, PA6, PA7};
+use gpio::gpioa::{PA0, PA4, PA5, PA6, PA7};
 use gpio::gpiob::{PB0, PB1};
 
 pub struct Adc<ADC> {
@@ -33,8 +33,8 @@ adc_pin!(PA7, 7);
 adc_pin!(PB0, 8);
 adc_pin!(PB1, 9);
 
-impl Adc<stm32f0xx::ADC> {
-    pub fn adc(adc: stm32f0xx::ADC) -> Adc<stm32f0xx::ADC> {
+impl Adc<ADC> {
+    pub fn adc(adc: ADC) -> Adc<ADC> {
         adc.cr.write(|w| w.addis().set_bit());
         while adc.cr.read().aden().bit_is_set() { /* Wait for the ADC to be disabled */ }
 
@@ -63,9 +63,14 @@ impl Adc<stm32f0xx::ADC> {
 
         Adc { adc }
     }
+
+    pub fn free(self) -> ADC {
+        self.adc.cr.write(|w| w.addis().set_bit());
+        self.adc
+    }
 }
 
-impl<'a, PIN> analog_hal::Adc<u16> for (&'a mut Adc<stm32f0xx::ADC>, &'a mut PIN)
+impl<'a, PIN> analog_hal::Adc<u16> for (&'a mut Adc<ADC>, &'a mut PIN)
 where
     PIN: AdcPin,
 {
@@ -82,3 +87,36 @@ where
         adc.dr.read().data().bits()
     }
 }
+
+pub struct Dac<DAC, PINS> {
+    dac: DAC,
+    pins: PINS,
+}
+
+impl<LEFT, RIGHT> Dac<DAC, (LEFT, RIGHT)>
+where
+    LEFT: DacLeftPin,
+    RIGHT: DacRightPin,
+{
+    pub fn dac(dac: DAC, pins: (LEFT, RIGHT)) -> Self {
+        Self { dac, pins }
+    }
+
+    pub fn free(self) -> (DAC, (LEFT, RIGHT)) {
+        (self.dac, self.pins)
+    }
+}
+
+impl<PINS> analog_hal::Dac for Dac<DAC, PINS> {
+    fn set_right_u8(&self, value: u8) {
+        self.dac
+            .dhr8r1
+            .write(|w| unsafe { w.dacc1dhr().bits(value) });
+    }
+}
+
+pub unsafe trait DacLeftPin {}
+pub unsafe trait DacRightPin {}
+
+unsafe impl DacLeftPin for PA4<Analog> {}
+unsafe impl DacRightPin for PA5<Analog> {}
