@@ -6,12 +6,6 @@ use hal::spi::{FullDuplex, Mode, Phase, Polarity};
 use nb;
 use stm32f0xx::{SPI1, SPI2};
 
-use gpio::gpioa::{PA5, PA6, PA7, PA8};
-use gpio::gpiob::{PB10, PB13, PB14, PB15, PB4, PB5};
-use gpio::gpioc::{PC2, PC3};
-use gpio::gpiod::{PD1, PD3, PD4};
-use gpio::gpioe::{PE13, PE14, PE15};
-use gpio::{AF0, AF1, AF5};
 use rcc::{APB1, APB2, Clocks};
 use time::Hertz;
 
@@ -28,6 +22,9 @@ pub enum Error {
 }
 
 // FIXME these should be "closed" traits
+/// NSS pin -- DO NOT IMPLEMENT THIS TRAIT
+pub unsafe trait NssPin<SPI> {}
+
 /// SCK pin -- DO NOT IMPLEMENT THIS TRAIT
 pub unsafe trait SckPin<SPI> {}
 
@@ -37,24 +34,93 @@ pub unsafe trait MisoPin<SPI> {}
 /// MOSI pin -- DO NOT IMPLEMENT THIS TRAIT
 pub unsafe trait MosiPin<SPI> {}
 
-unsafe impl SckPin<SPI1> for PA5<AF0> {}
-unsafe impl SckPin<SPI1> for PE13<AF1> {}
-unsafe impl SckPin<SPI2> for PB10<AF5> {}
-unsafe impl SckPin<SPI2> for PB13<AF0> {}
-unsafe impl SckPin<SPI2> for PD1<AF1> {}
-unsafe impl SckPin<SPI1> for PA8<AF0> {}
-unsafe impl MisoPin<SPI2> for PC2<AF1> {}
-unsafe impl MisoPin<SPI1> for PA6<AF0> {}
-unsafe impl MisoPin<SPI1> for PE14<AF1> {}
-unsafe impl MisoPin<SPI2> for PB14<AF0> {}
-unsafe impl MisoPin<SPI2> for PD3<AF1> {}
-unsafe impl MisoPin<SPI1> for PB4<AF0> {}
-unsafe impl MosiPin<SPI2> for PC3<AF1> {}
-unsafe impl MosiPin<SPI1> for PA7<AF0> {}
-unsafe impl MosiPin<SPI1> for PE15<AF1> {}
-unsafe impl MosiPin<SPI2> for PB15<AF0> {}
-unsafe impl MosiPin<SPI2> for PD4<AF1> {}
-unsafe impl MosiPin<SPI1> for PB5<AF0> {}
+#[cfg(feature = "stm32f071")]
+mod stm32f071 {
+    use gpio::gpioa::{PA15, PA4, PA5, PA6, PA7};
+    use gpio::gpiob::{PB10, PB12, PB13, PB14, PB15, PB3, PB4, PB5, PB9};
+    use gpio::gpioc::{PC2, PC3};
+    use gpio::gpiod::{PD0, PD1, PD3, PD4};
+    use gpio::gpioe::{PE12, PE13, PE14, PE15};
+    use gpio::{AF0, AF1, AF5};
+
+    use stm32f0xx::{SPI1, SPI2};
+
+    use super::{MisoPin, MosiPin, NssPin, SckPin};
+
+    unsafe impl NssPin<SPI1> for PA4<AF0> {}
+    unsafe impl SckPin<SPI1> for PA5<AF0> {}
+    unsafe impl MisoPin<SPI1> for PA6<AF0> {}
+    unsafe impl MosiPin<SPI1> for PA7<AF0> {}
+
+    unsafe impl NssPin<SPI1> for PA15<AF0> {}
+    unsafe impl SckPin<SPI1> for PB3<AF0> {}
+    unsafe impl MisoPin<SPI1> for PB4<AF0> {}
+    unsafe impl MosiPin<SPI1> for PB5<AF0> {}
+
+    unsafe impl NssPin<SPI2> for PB12<AF0> {}
+    unsafe impl SckPin<SPI2> for PB13<AF0> {}
+    unsafe impl MisoPin<SPI2> for PB14<AF0> {}
+    unsafe impl MosiPin<SPI2> for PB15<AF0> {}
+
+    unsafe impl NssPin<SPI2> for PB9<AF5> {}
+    unsafe impl SckPin<SPI2> for PB10<AF5> {}
+    unsafe impl MisoPin<SPI2> for PC2<AF1> {}
+    unsafe impl MosiPin<SPI2> for PC3<AF1> {}
+
+    unsafe impl NssPin<SPI2> for PD0<AF1> {}
+    unsafe impl SckPin<SPI2> for PD1<AF1> {}
+    unsafe impl MisoPin<SPI2> for PD3<AF1> {}
+    unsafe impl MosiPin<SPI2> for PD4<AF1> {}
+
+    unsafe impl NssPin<SPI1> for PE12<AF1> {}
+    unsafe impl SckPin<SPI1> for PE13<AF1> {}
+    unsafe impl MisoPin<SPI1> for PE14<AF1> {}
+    unsafe impl MosiPin<SPI1> for PE15<AF1> {}
+}
+
+#[cfg(feature = "stm32f072")]
+mod stm32f072 {
+    use gpio::gpioa::{PA15, PA4, PA5, PA6, PA7};
+    use gpio::gpiob::{PB10, PB12, PB13, PB14, PB3, PB4, PB5, PB9};
+    use gpio::gpioc::{PC2, PC3};
+    use gpio::gpiod::{PD0, PD1, PD3, PD4};
+    use gpio::gpioe::{PE12, PE13, PE14, PE15};
+    use gpio::{AF0, AF1, AF5};
+
+    use stm32f0xx::{SPI1, SPI2};
+
+    use super::{MisoPin, MosiPin, NssPin, SckPin};
+
+    unsafe impl NssPin<SPI1> for PA4<AF0> {}
+    unsafe impl SckPin<SPI1> for PA5<AF0> {}
+    unsafe impl MisoPin<SPI1> for PA6<AF0> {}
+    unsafe impl MosiPin<SPI1> for PA7<AF0> {}
+
+    unsafe impl NssPin<SPI1> for PA15<AF0> {}
+    unsafe impl SckPin<SPI1> for PB3<AF0> {}
+    unsafe impl MisoPin<SPI1> for PB4<AF0> {}
+    unsafe impl MosiPin<SPI1> for PB5<AF0> {}
+
+    unsafe impl NssPin<SPI2> for PB12<AF0> {}
+    unsafe impl SckPin<SPI2> for PB13<AF0> {}
+    unsafe impl MisoPin<SPI2> for PB13<AF0> {}
+    unsafe impl MosiPin<SPI2> for PB14<AF0> {}
+
+    unsafe impl NssPin<SPI2> for PB9<AF5> {}
+    unsafe impl SckPin<SPI2> for PB10<AF5> {}
+    unsafe impl MisoPin<SPI2> for PC2<AF1> {}
+    unsafe impl MosiPin<SPI2> for PC3<AF1> {}
+
+    unsafe impl NssPin<SPI2> for PD0<AF1> {}
+    unsafe impl SckPin<SPI2> for PD1<AF1> {}
+    unsafe impl MisoPin<SPI2> for PD3<AF1> {}
+    unsafe impl MosiPin<SPI2> for PD4<AF1> {}
+
+    unsafe impl NssPin<SPI1> for PE12<AF1> {}
+    unsafe impl SckPin<SPI1> for PE13<AF1> {}
+    unsafe impl MisoPin<SPI1> for PE14<AF1> {}
+    unsafe impl MosiPin<SPI1> for PE15<AF1> {}
+}
 
 /// SPI peripheral operating in full duplex master mode
 pub struct Spi<SPI, PINS> {

@@ -7,6 +7,21 @@ license = "MIT OR Apache-2.0"
 name = "stm32f0xx-hal"
 version = "0.1.0"
 
+[features]
+stm32f071 = []
+stm32f071c8 = ["stm32f071"]
+stm32f071v8 = ["stm32f071"]
+stm32f071cb = ["stm32f071"]
+stm32f071rb = ["stm32f071"]
+stm32f071vb = ["stm32f071"]
+stm32f072 = []
+stm32f072c8 = ["stm32f072"]
+stm32f072r8 = ["stm32f072"]
+stm32f072v8 = ["stm32f072"]
+stm32f072cb = ["stm32f072"]
+stm32f072rb = ["stm32f072"]
+stm32f072vb = ["stm32f072"]
+
 [dependencies]
 cortex-m = "0.4.0"
 embedded-hal = "0.1.0"
