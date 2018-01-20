@@ -82,7 +82,7 @@ impl Adc<ADC> {
     }
 }
 
-impl<'a, PIN> analog_hal::Adc<u16> for (Adc<ADC>, PIN)
+impl<'a, PIN> analog_hal::Adc<u16> for (&'a mut Adc<ADC>, &'a mut PIN)
 where
     PIN: AdcPin,
 {
@@ -114,7 +114,7 @@ impl Dac<DAC> {
     }
 }
 
-impl<'a, PIN> analog_hal::Dac<u8> for (Dac<DAC>, PIN)
+impl<'a, PIN> analog_hal::Dac<u8> for (&'a mut Dac<DAC>, &'a mut PIN)
 where
     PIN: DacPin,
 {
@@ -137,10 +137,9 @@ unsafe impl DacPin for PA4<Analog> {
             .write(|w| unsafe { w.dacc1dhr().bits(value) });
     }
 }
+
 unsafe impl DacPin for PA5<Analog> {
-    fn set(&mut self, dac: &mut Dac<DAC>, value: u8) {
-        dac.dac
-            .dhr8r1
-            .write(|w| unsafe { w.dacc1dhr().bits(value) });
+    fn set(&mut self, _dac: &mut Dac<DAC>, _value: u8) {
+        unimplemented!()
     }
 }
