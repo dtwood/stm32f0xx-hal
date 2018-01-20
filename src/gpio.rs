@@ -65,29 +65,32 @@ pub struct AF6;
 /// Alternate function 7 (type state)
 pub struct AF7;
 
-/// Alternate function 8 (type state)
-pub struct AF8;
+macro_rules! into_af {
+    ($PXi:ident, $i:expr, $AFR:ident, $fn_name:ident, $af_type:ty, $af_num:expr) => {
+        /// Configures the pin to serve as an alternate function
+        pub fn $fn_name(
+            self,
+            moder: &mut MODER,
+            afr: &mut $AFR,
+        ) -> $PXi<$af_type> {
+            let offset = 2 * $i;
 
-/// Alternate function 9 (type state)
-pub struct AF9;
+            // alternate function mode
+            let mode = 0b10;
+            moder.moder().modify(|r, w| unsafe {
+                w.bits((r.bits() & !(0b11 << offset)) | (mode << offset))
+            });
 
-/// Alternate function 10 (type state)
-pub struct AF10;
+            let af = $af_num;
+            let offset = 4 * ($i % 8);
+            afr.afr().modify(|r, w| unsafe {
+                w.bits((r.bits() & !(0b1111 << offset)) | (af << offset))
+            });
 
-/// Alternate function 11 (type state)
-pub struct AF11;
-
-/// Alternate function 12 (type state)
-pub struct AF12;
-
-/// Alternate function 13 (type state)
-pub struct AF13;
-
-/// Alternate function 14 (type state)
-pub struct AF14;
-
-/// Alternate function 15 (type state)
-pub struct AF15;
+            $PXi { _mode: PhantomData }
+        }
+    }
+}
 
 macro_rules! gpio {
     ($GPIOX:ident, $gpiox:ident, $gpioy:ident, $iopxenr:ident, $iopxrst:ident, $PXx:ident, [
@@ -102,7 +105,7 @@ macro_rules! gpio {
 
             use rcc::AHB;
             use super::{
-                AF4, AF5, AF6, AF7, Floating, GpioExt, Input, OpenDrain, Output,
+                AF0, AF1, AF2, AF3, AF4, AF5, AF6, AF7, Floating, GpioExt, Input, OpenDrain, Output,
                 PullDown, PullUp, PushPull, Analog
             };
 
@@ -234,98 +237,14 @@ macro_rules! gpio {
                 }
 
                 impl<MODE> $PXi<MODE> {
-                    /// Configures the pin to serve as alternate function 4 (AF4)
-                    pub fn into_af4(
-                        self,
-                        moder: &mut MODER,
-                        afr: &mut $AFR,
-                    ) -> $PXi<AF4> {
-                        let offset = 2 * $i;
-
-                        // alternate function mode
-                        let mode = 0b10;
-                        moder.moder().modify(|r, w| unsafe {
-                            w.bits((r.bits() & !(0b11 << offset)) | (mode << offset))
-                        });
-
-                        let af = 4;
-                        let offset = 4 * ($i % 8);
-                        afr.afr().modify(|r, w| unsafe {
-                            w.bits((r.bits() & !(0b1111 << offset)) | (af << offset))
-                        });
-
-                        $PXi { _mode: PhantomData }
-                    }
-
-                    /// Configures the pin to serve as alternate function 5 (AF5)
-                    pub fn into_af5(
-                        self,
-                        moder: &mut MODER,
-                        afr: &mut $AFR,
-                    ) -> $PXi<AF5> {
-                        let offset = 2 * $i;
-
-                        // alternate function mode
-                        let mode = 0b10;
-                        moder.moder().modify(|r, w| unsafe {
-                            w.bits((r.bits() & !(0b11 << offset)) | (mode << offset))
-                        });
-
-                        let af = 5;
-                        let offset = 4 * ($i % 8);
-                        afr.afr().modify(|r, w| unsafe {
-                            w.bits((r.bits() & !(0b1111 << offset)) | (af << offset))
-                        });
-
-                        $PXi { _mode: PhantomData }
-                    }
-
-                    /// Configures the pin to serve as alternate function 6 (AF6)
-                    pub fn into_af6(
-                        self,
-                        moder: &mut MODER,
-                        afr: &mut $AFR,
-                    ) -> $PXi<AF6> {
-                        let offset = 2 * $i;
-
-                        // alternate function mode
-                        let mode = 0b10;
-                        moder.moder().modify(|r, w| unsafe {
-                            w.bits((r.bits() & !(0b11 << offset)) | (mode << offset))
-                        });
-
-                        let af = 6;
-                        let offset = 4 * ($i % 8);
-                        afr.afr().modify(|r, w| unsafe {
-                            w.bits((r.bits() & !(0b1111 << offset)) | (af << offset))
-                        });
-
-                        $PXi { _mode: PhantomData }
-                    }
-
-                    /// Configures the pin to serve as alternate function 7 (AF7)
-                    pub fn into_af7(
-                        self,
-                        moder: &mut MODER,
-                        afr: &mut $AFR,
-                    ) -> $PXi<AF7> {
-                        let offset = 2 * $i;
-
-                        // alternate function mode
-                        let mode = 0b10;
-                        moder.moder().modify(|r, w| unsafe {
-                            w.bits((r.bits() & !(0b11 << offset)) | (mode << offset))
-                        });
-
-                        let af = 7;
-                        let offset = 4 * ($i % 8);
-
-                        afr.afr().modify(|r, w| unsafe {
-                            w.bits((r.bits() & !(0b1111 << offset)) | (af << offset))
-                        });
-
-                        $PXi { _mode: PhantomData }
-                    }
+                    into_af!($PXi, $i, $AFR, into_af0, AF0, 0);
+                    into_af!($PXi, $i, $AFR, into_af1, AF1, 1);
+                    into_af!($PXi, $i, $AFR, into_af2, AF2, 2);
+                    into_af!($PXi, $i, $AFR, into_af3, AF3, 3);
+                    into_af!($PXi, $i, $AFR, into_af4, AF4, 4);
+                    into_af!($PXi, $i, $AFR, into_af5, AF5, 5);
+                    into_af!($PXi, $i, $AFR, into_af6, AF6, 6);
+                    into_af!($PXi, $i, $AFR, into_af7, AF7, 7);
 
                     /// Configures the pin to operate as a floating input pin
                     pub fn into_floating_input(
@@ -434,7 +353,7 @@ macro_rules! gpio {
                         $PXi { _mode: PhantomData }
                     }
 
-                    /// Configures the pin to serve as alternate function 6 (AF6)
+                    /// Configures the pin to serve as an analog input
                     pub fn into_analog(
                         self,
                         moder: &mut MODER,
