@@ -100,35 +100,47 @@ where
     }
 }
 
-pub struct Dac<DAC, PINS> {
+pub struct Dac<DAC> {
     dac: DAC,
-    pins: PINS,
 }
 
-impl<LEFT, RIGHT> Dac<DAC, (LEFT, RIGHT)>
-where
-    LEFT: DacLeftPin,
-    RIGHT: DacRightPin,
-{
-    pub fn dac(dac: DAC, pins: (LEFT, RIGHT)) -> Self {
-        Self { dac, pins }
+impl Dac<DAC> {
+    pub fn dac(dac: DAC) -> Self {
+        Self { dac }
     }
 
-    pub fn free(self) -> (DAC, (LEFT, RIGHT)) {
-        (self.dac, self.pins)
-    }
-}
-
-impl<PINS> analog_hal::Dac for Dac<DAC, PINS> {
-    fn set_right_u8(&self, value: u8) {
+    pub fn free(self) -> DAC {
         self.dac
+    }
+}
+
+impl<'a, PIN> analog_hal::Dac<u8> for (Dac<DAC>, PIN)
+where
+    PIN: DacPin,
+{
+    fn set(&mut self, value: u8) {
+        let dac = &mut self.0;
+        let pin = &mut self.1;
+
+        pin.set(dac, value);
+    }
+}
+
+pub unsafe trait DacPin {
+    fn set(&mut self, dac: &mut Dac<DAC>, value: u8);
+}
+
+unsafe impl DacPin for PA4<Analog> {
+    fn set(&mut self, dac: &mut Dac<DAC>, value: u8) {
+        dac.dac
             .dhr8r1
             .write(|w| unsafe { w.dacc1dhr().bits(value) });
     }
 }
-
-pub unsafe trait DacLeftPin {}
-pub unsafe trait DacRightPin {}
-
-unsafe impl DacLeftPin for PA4<Analog> {}
-unsafe impl DacRightPin for PA5<Analog> {}
+unsafe impl DacPin for PA5<Analog> {
+    fn set(&mut self, dac: &mut Dac<DAC>, value: u8) {
+        dac.dac
+            .dhr8r1
+            .write(|w| unsafe { w.dacc1dhr().bits(value) });
+    }
+}
