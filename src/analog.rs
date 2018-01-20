@@ -3,17 +3,16 @@
 use analog_hal;
 use stm32f0xx::{ADC, DAC};
 use gpio::Analog;
-use gpio::gpioa::{PA0, PA4, PA5, PA6, PA7};
+use gpio::gpioa::{PA0, PA1, PA2, PA3, PA4, PA5, PA6, PA7};
 use gpio::gpiob::{PB0, PB1};
+use gpio::gpioc::{PC0, PC1, PC2, PC3, PC4, PC5};
 
 pub struct Adc<ADC> {
     adc: ADC,
 }
 
 pub unsafe trait AdcPin {
-    fn get_channel(&self) -> u8 {
-        unimplemented!()
-    }
+    fn get_channel(&self) -> u8;
 }
 
 macro_rules! adc_pin {
@@ -27,11 +26,24 @@ macro_rules! adc_pin {
 }
 
 adc_pin!(PA0, 0);
+adc_pin!(PA1, 1);
+adc_pin!(PA2, 2);
+adc_pin!(PA3, 3);
+adc_pin!(PA4, 4);
 adc_pin!(PA5, 5);
 adc_pin!(PA6, 6);
 adc_pin!(PA7, 7);
 adc_pin!(PB0, 8);
 adc_pin!(PB1, 9);
+adc_pin!(PC0, 10);
+adc_pin!(PC1, 11);
+adc_pin!(PC2, 12);
+adc_pin!(PC3, 13);
+adc_pin!(PC4, 14);
+adc_pin!(PC5, 15);
+// adc_pin!(VSense, 15);
+// adc_pin!(VRefInt, 17);
+// adc_pin!(VBat, 18);
 
 impl Adc<ADC> {
     pub fn adc(adc: ADC) -> Adc<ADC> {
@@ -70,11 +82,11 @@ impl Adc<ADC> {
     }
 }
 
-impl<'a, PIN> analog_hal::Adc<u16> for (&'a mut Adc<ADC>, &'a mut PIN)
+impl<'a, PIN> analog_hal::Adc<u16> for (Adc<ADC>, PIN)
 where
     PIN: AdcPin,
 {
-    fn read(&self) -> u16 {
+    fn read(&mut self) -> u16 {
         let adc = &self.0.adc;
         let pin = &self.1;
 
