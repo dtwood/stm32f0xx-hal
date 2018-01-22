@@ -131,11 +131,11 @@ pub struct Spi<SPI, PINS> {
 macro_rules! hal {
     ($($SPIX:ident: ($spiX:ident, $APBX:ident, $spiXen:ident, $spiXrst:ident, $pclkX:ident),)+) => {
         $(
-            impl<SCK, MISO, MOSI> Spi<$SPIX, (SCK, MISO, MOSI)> {
+            impl<NSS, SCK, MISO, MOSI> Spi<$SPIX, (Option<NSS>, SCK, MISO, MOSI)> {
                 /// Configures the SPI peripheral to operate in full duplex master mode
                 pub fn $spiX<F>(
                     spi: $SPIX,
-                    pins: (SCK, MISO, MOSI),
+                    pins: (Option<NSS>, SCK, MISO, MOSI),
                     mode: Mode,
                     freq: F,
                     clocks: Clocks,
@@ -143,6 +143,7 @@ macro_rules! hal {
                 ) -> Self
                 where
                     F: Into<Hertz>,
+                    NSS: NssPin<$SPIX>,
                     SCK: SckPin<$SPIX>,
                     MISO: MisoPin<$SPIX>,
                     MOSI: MosiPin<$SPIX>,
@@ -198,19 +199,23 @@ macro_rules! hal {
                             .clear_bit()
                             .ssi()
                             .set_bit()
-                            .ssm()
-                            .set_bit()
                             .crcen()
                             .clear_bit()
                             .bidimode()
-                            .clear_bit()
+                            .clear_bit();
+                        if pins.0.is_some() {
+                            w.ssm().clear_bit();
+                        } else {
+                            w.ssm().set_bit();
+                        }
+                        w
                     });
 
                     Spi { spi, pins }
                 }
 
                 /// Releases the SPI peripheral and associated pins
-                pub fn free(self) -> ($SPIX, (SCK, MISO, MOSI)) {
+                pub fn free(self) -> ($SPIX, (Option<NSS>, SCK, MISO, MOSI)) {
                     (self.spi, self.pins)
                 }
             }
